@@ -1,0 +1,17 @@
+{
+  "admin": {
+    "brand": "內容管理系統",
+    "links": [
+      {
+        "title": "管理後台",
+        "path": "Admin/",
+        "icon": ""
+      },
+      {
+        "title": "文章管理",
+        "path": "Admin/create_post.html",
+        "icon": "fas fa-file-alt"
+      }
+    ]
+  }
+}
