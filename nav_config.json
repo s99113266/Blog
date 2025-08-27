@@ -1,4 +1,14 @@
 {
+  "links": [
+    {
+      "name": "首頁",
+      "url": "index.html"
+    },
+    {
+      "name": "關於我",
+      "url": "#about"
+    }
+  ],
   "admin": {
     "brand": "內容管理系統",
     "links": [

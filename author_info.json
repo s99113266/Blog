@@ -1,0 +1,23 @@
+{
+  "name": "陳小明",
+  "avatar": "https://i.pravatar.cc/300",
+  "title": "前端工程師 / 技術部落客",
+  "bio": "嗨！我是小明，一位熱愛前端技術的工程師。平時喜歡研究新技術、寫部落格分享心得，以及參與開源專案。這個部落格記錄了我在技術學習和生活中的所思所想，希望能與大家一起成長！",
+  "social": [
+    {
+      "platform": "GitHub",
+      "url": "https://github.com/username",
+      "icon": "fab fa-github"
+    },
+    {
+      "platform": "LinkedIn",
+      "url": "https://linkedin.com/in/username",
+      "icon": "fab fa-linkedin"
+    },
+    {
+      "platform": "Twitter",
+      "url": "https://twitter.com/username",
+      "icon": "fab fa-twitter"
+    }
+  ]
+}

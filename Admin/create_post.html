@@ -119,15 +119,22 @@
           });
           
           if (response.ok) {
-            statusMessage.textContent = '文章提交成功！';
-            statusMessage.className = 'status-message success';
+            // 解析 JSON 回應
+            const result = await response.json();
             
-            // 如果是新增文章，則重置表單
-            if (document.getElementById('page').value === '新增') {
-              this.reset();
-              if (tinymce.get('content')) {
-                tinymce.get('content').setContent('');
+            if (result.state === 0) {
+              statusMessage.textContent = '文章提交成功！';
+              statusMessage.className = 'status-message success';
+              
+              // 如果是新增文章，則重置表單
+              if (document.getElementById('page').value === '新增') {
+                this.reset();
+                if (tinymce.get('content')) {
+                  tinymce.get('content').setContent('');
+                }
               }
+            } else {
+              throw new Error('儲存失敗，請檢查資料是否正確');
             }
           } else {
             throw new Error('伺服器回應錯誤');
@@ -165,8 +172,8 @@
       
       // 如果有 no 參數，表示編輯文章
       if (params.no) {
-        // 更改 page 值為 "編輯"
-        pageInput.value = "編輯";
+        // 更改 page 值為 "儲存"
+        pageInput.value = "儲存";
         
         // 使用 AJAX 獲取文章資料
         fetch(`../../webhook_config.json`)
@@ -241,6 +248,20 @@
                 document.getElementById('postForm').appendChild(noInput);
               }
               noInput.value = data.id;
+            }
+            
+            // 添加資料庫主鍵隱藏欄位
+            if (data.kp) {
+              // 檢查是否已存在 kp 欄位，如果存在則更新值，否則創建新欄位
+              let kpInput = document.getElementById('kp');
+              if (!kpInput) {
+                kpInput = document.createElement('input');
+                kpInput.type = 'hidden';
+                kpInput.id = 'kp';
+                kpInput.name = 'kp';
+                document.getElementById('postForm').appendChild(kpInput);
+              }
+              kpInput.value = data.kp;
             }
             
             // 更新頁面標題
