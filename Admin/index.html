@@ -3,13 +3,382 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>管理後台</title>
+  <title>文章管理 | 管理後台</title>
+  <link rel="stylesheet" href="css/admin.css">
   <link rel="stylesheet" href="css/admin-nav.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <style>
+    /* 文章列表特定樣式 */
+    .post-list-container {
+      margin-top: 2rem;
+    }
+    
+    .post-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .post-list-title {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+      margin: 0;
+    }
+    
+    .add-post-btn {
+      background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .add-post-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 59, 79, 0.15);
+    }
+    
+    /* 文章列表樣式 */
+    .post-item {
+      padding: 1.5rem;
+      border-bottom: 1px solid #eee;
+      background-color: white;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .post-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .post-category {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+    
+    .post-title {
+      font-size: 1.4rem;
+      margin: 0.5rem 0;
+    }
+    
+    .post-title a {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    
+    .post-title a:hover {
+      color: var(--accent-color);
+    }
+    
+    .post-meta {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 0.8rem;
+    }
+    
+    .post-excerpt {
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    
+    .post-actions {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+    
+    .edit-btn,
+    .delete-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+    
+    .edit-btn {
+      background-color: #4A90E2;
+      color: white;
+    }
+    
+    .delete-btn {
+      background-color: #E53935;
+      color: white;
+    }
+    
+    .edit-btn:hover,
+    .delete-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    
+    .post-category[data-category="技術"] {
+      background-color: #4CAF50;
+    }
+    
+    .post-category[data-category="生活"] {
+      background-color: #2196F3;
+    }
+    
+    .post-category[data-category="心情"] {
+      background-color: #FF9800;
+    }
+    
+    .loading-indicator {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+    
+    .no-posts-message {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+      font-style: italic;
+    }
+    
+    /* 總筆數資訊樣式 */
+    .total-count-info {
+      margin: 1.5rem 0;
+      padding: 0.5rem 0;
+      color: #666;
+      font-size: 0.95rem;
+      border-bottom: 1px dashed #dee2e6;
+    }
+    
+    /* 分頁導航樣式 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 2rem 0;
+      padding: 1rem 0;
+      flex-wrap: wrap;
+    }
+    
+    .pagination-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.5rem;
+      height: 2.5rem;
+      padding: 0 0.8rem;
+      border: 1px solid #dee2e6;
+      background-color: white;
+      color: var(--text-color);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .pagination-btn:hover:not([disabled]) {
+      background-color: #f8f9fa;
+      border-color: var(--accent-color);
+    }
+    
+    .pagination-btn.active {
+      background-color: var(--accent-color);
+      color: white;
+      border-color: var(--accent-color);
+    }
+    
+    .prev-btn, .next-btn {
+      padding: 0 1rem;
+      font-weight: 500;
+    }
+    
+    .pagination-btn[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: #f8f9fa;
+    }
+    
+    .status-message {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+    }
+    
+    .success {
+      background-color: #D4EDDA;
+      color: #155724;
+      border: 1px solid #C3E6CB;
+    }
+    
+    .error {
+      background-color: #F8D7DA;
+      color: #721C24;
+      border: 1px solid #F5C6CB;
+    }
+    
+    /* 確認刪除對話框 */
+    .delete-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .delete-modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .delete-modal-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+    }
+    
+    .delete-modal-message {
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    
+    .delete-modal-form {
+      margin-bottom: 1.5rem;
+    }
+    
+    .delete-modal-input-group {
+      margin-bottom: 1rem;
+    }
+    
+    .delete-modal-input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-color);
+    }
+    
+    .delete-modal-input {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    .delete-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+    
+    .delete-modal-cancel,
+    .delete-modal-confirm {
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    .delete-modal-cancel {
+      background-color: #E0E0E0;
+      color: #333;
+    }
+    
+    .delete-modal-confirm {
+      background-color: #E53935;
+      color: white;
+    }
+    
+    /* 響應式設計 */
+    @media (max-width: 768px) {
+      .post-table {
+        display: block;
+        overflow-x: auto;
+      }
+      
+      .post-list-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .add-post-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
 <body>
   <nav id="admin-navbar" class="admin-navbar"></nav>
-
+  
+  <div class="admin-container">
+    <div class="post-list-container">
+      <div class="post-list-header">
+        <h1 class="post-list-title">文章管理</h1>
+        <a href="create_post.html" class="add-post-btn">
+          <i class="fas fa-plus"></i> 新增文章
+        </a>
+      </div>
+      
+      <div id="post-list-content">
+        <div class="loading-indicator">
+          <i class="fas fa-spinner fa-spin"></i> 正在載入文章列表...
+        </div>
+      </div>
+      
+      <div id="status-message" class="status-message"></div>
+    </div>
+  </div>
+  
+  <!-- 確認刪除對話框 -->
+  <div id="delete-modal" class="delete-modal">
+    <div class="delete-modal-content">
+      <h2 class="delete-modal-title">確認刪除</h2>
+      <p class="delete-modal-message">您確定要刪除這篇文章嗎？此操作無法撤銷。</p>
+      <div class="delete-modal-form">
+        <div class="delete-modal-input-group">
+          <label for="admin-password">請輸入管理員密碼：</label>
+          <input type="password" id="admin-password" class="delete-modal-input" placeholder="管理員密碼" required>
+        </div>
+      </div>
+      <div class="delete-modal-actions">
+        <button id="delete-modal-cancel" class="delete-modal-cancel">取消</button>
+        <button id="delete-modal-confirm" class="delete-modal-confirm">確認刪除</button>
+      </div>
+    </div>
+  </div>
+  
   <script src="js/admin-nav.js"></script>
+  <script src="js/admin-index.js"></script>
 </body>
 </html>

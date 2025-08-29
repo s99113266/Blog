@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文章內容 | 我的部落格</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* 文章內容頁面特定樣式 */
+    .article-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 0;
+    }
+    
+    .article-header {
+      margin-bottom: 2rem;
+    }
+    
+    .article-title {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: var(--light-text-color);
+      margin-bottom: 1rem;
+    }
+    
+    .article-category {
+      display: inline-block;
+      font-size: 0.8rem;
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-right: 0.5rem;
+    }
+    
+    .article-date {
+      font-size: 0.9rem;
+    }
+    
+    .article-content {
+      line-height: 1.8;
+      font-size: 1.1rem;
+    }
+    
+    .article-content p {
+      margin-bottom: 1.5rem;
+    }
+    
+    .article-content img {
+      max-width: 100%;
+      height: auto;
+      margin: 1.5rem 0;
+      border-radius: 4px;
+    }
+    
+    .article-content h2 {
+      font-size: 1.5rem;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .article-content h3 {
+      font-size: 1.3rem;
+      margin: 1.5rem 0 1rem;
+    }
+    
+    .article-content blockquote {
+      border-left: 4px solid var(--primary-color);
+      padding-left: 1rem;
+      margin-left: 0;
+      color: var(--light-text-color);
+      font-style: italic;
+    }
+    
+    .article-content code {
+      background-color: #f5f5f5;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    
+    .article-content pre {
+      background-color: #f5f5f5;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+    
+    .article-content pre code {
+      background-color: transparent;
+      padding: 0;
+    }
+    
+    .error-message {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 1rem;
+      border-radius: 4px;
+      margin: 2rem 0;
+      text-align: center;
+    }
+    
+    .loading-indicator {
+      text-align: center;
+      padding: 2rem 0;
+      color: var(--light-text-color);
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 2rem;
+      height: 2rem;
+      border: 0.25rem solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s ease-in-out infinite;
+      margin-bottom: 1rem;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .back-to-home {
+      display: inline-block;
+      margin-top: 2rem;
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .back-to-home:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header id="header"></header>
+  
+  <div class="container">
+    <main class="post-list">
+      <h1 class="page-title">文章內容</h1>
+      
+      <div id="article-container" class="article-container">
+        <div class="loading-indicator">
+          <div class="loading-spinner"></div>
+          <p>正在載入文章內容...</p>
+        </div>
+      </div>
+      
+      <a href="index.html" class="back-to-home">
+        <i class="fas fa-arrow-left"></i> 返回首頁
+      </a>
+    </main>
+  </div>
+  
+  <footer id="footer"></footer>
+  
+  <!-- 將腳本移到body末尾，確保DOM完全載入後再執行 -->
+  <script src="header.js"></script>
+  <script src="footer.js"></script>
+  <script src="blog.js"></script>
+  
+  <!-- 文章頁面專用腳本 -->
+  <script>
+    // 立即執行的函數，確保變量不會污染全局命名空間
+    (function() {
+      console.log('文章頁面腳本開始執行');
+      
+      // 從URL獲取文章編號
+      function getArticleNoFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('no');
+      }
+      
+      // 獲取文章編號
+      const articleNo = getArticleNoFromUrl();
+      console.log('文章編號:', articleNo);
+      
+      // 如果沒有文章編號，顯示錯誤信息
+      if (!articleNo) {
+        showErrorMessage('無法獲取文章編號，請確保URL中包含正確的no參數');
+        return;
+      }
+      
+      // 獲取文章容器元素
+      const articleContainer = document.getElementById('article-container');
+      
+      // 從webhook_config.json讀取webhook URL
+      function loadWebhookConfig() {
+        console.log('開始讀取webhook_config.json...');
+        
+        return fetch('webhook_config.json')
+          .then(response => {
+            console.log('webhook_config.json 回應狀態:', response.status, response.statusText);
+            if (!response.ok) {
+              throw new Error(`無法讀取webhook_config.json: ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+          })
+          .then(config => {
+            console.log('成功讀取webhook_config.json:', config);
+            const webhookUrl = config.webhookUrl;
+            console.log('設置webhookUrl:', webhookUrl);
+            
+            // 讀取成功後發送POST請求獲取文章內容
+            fetchArticleContent(webhookUrl);
+            
+            return webhookUrl;
+          })
+          .catch(error => {
+            console.error('讀取webhook_config.json時發生錯誤:', error);
+            showErrorMessage('無法讀取webhook配置，請稍後再試');
+            return null;
+          });
+      }
+      
+      // 發送POST請求獲取文章內容
+      function fetchArticleContent(webhookUrl) {
+        console.log('開始發送POST請求獲取文章內容...');
+        
+        // 檢查webhookUrl是否已設置
+        if (!webhookUrl) {
+          console.error('webhookUrl未設置，無法發送請求');
+          showErrorMessage('無法發送請求，webhookUrl未設置');
+          return;
+        }
+        
+        // 創建FormData物件
+        const formData = new FormData();
+        formData.append('page', '文章');
+        formData.append('no', articleNo);
+        
+        console.log('使用Webhook URL:', webhookUrl);
+        console.log('FormData內容:');
+        console.log('  - page:', formData.get('page'));
+        console.log('  - no:', formData.get('no'));
+        
+        // 使用fetch API發送POST請求
+        fetch(webhookUrl, {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          console.log('收到回應:', response);
+          if (!response.ok) {
+            throw new Error(`網路回應不正常: ${response.status} ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('POST請求返回數據:', data);
+          
+          // 檢查是否返回錯誤狀態
+          if (data.state === 1) {
+            showErrorMessage('無法獲取文章內容，可能是文章不存在或已被刪除');
+            return;
+          }
+          
+          // 顯示文章內容
+          displayArticleContent(data);
+        })
+        .catch(error => {
+          console.error('獲取文章內容時發生錯誤:', error);
+          showErrorMessage('獲取文章內容時發生錯誤，請稍後再試');
+        });
+      }
+      
+      // 顯示文章內容
+      function displayArticleContent(article) {
+        console.log('開始顯示文章內容:', article);
+        
+        // 更新頁面標題
+        document.title = `${article.title} | 我的部落格`;
+        
+        // 獲取文章分類的顏色
+        const categoryColor = getCategoryColor(article.class);
+        
+        // 創建文章HTML
+        const articleHTML = `
+          <div class="article-header">
+            <div class="article-category" style="background-color: ${categoryColor};">${article.class}</div>
+            <h1 class="article-title">${article.title}</h1>
+            <div class="article-meta">
+              <span class="article-date">發布日期：${article.date}</span>
+            </div>
+          </div>
+          <div class="article-content">
+            ${article.content}
+          </div>
+        `;
+        
+        // 更新文章容器
+        articleContainer.innerHTML = articleHTML;
+      }
+      
+      // 獲取分類顏色
+      function getCategoryColor(categoryName) {
+        switch(categoryName) {
+          case '技術':
+            return 'var(--category-tech)';
+          case '生活':
+            return 'var(--category-life)';
+          case '心情':
+            return 'var(--category-mood)';
+          default:
+            return '#777';
+        }
+      }
+      
+      // 顯示錯誤信息
+      function showErrorMessage(message) {
+        console.error(message);
+        
+        // 更新文章容器顯示錯誤信息
+        articleContainer.innerHTML = `
+          <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>${message}</p>
+          </div>
+        `;
+      }
+      
+      // 頁面載入時執行
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('頁面已載入，開始獲取文章內容');
+        loadWebhookConfig();
+      });
+    })();
+  </script>
+</body>
+</html>
