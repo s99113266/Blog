@@ -14,11 +14,11 @@
     "links": [
       {
         "title": "管理後台",
-        "path": "Admin/",
+        "path": "Admin/index.html",
         "icon": ""
       },
       {
-        "title": "文章管理",
+        "title": "新增文章",
         "path": "Admin/create_post.html",
         "icon": "fas fa-file-alt"
       }

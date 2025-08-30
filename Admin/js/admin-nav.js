@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // 加入除錯訊息
   console.log('正在載入導覽列設定檔:', configPath);
 
+  // 獲取當前頁面的文件名（不含路徑）
+  const currentPageFile = window.location.pathname.split('/').pop() || 'index.html';
+  console.log('當前頁面:', currentPageFile);
+
   fetch(configPath)
     .then(response => {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -34,10 +38,17 @@ document.addEventListener('DOMContentLoaded', function() {
           adjustedPath = link.path.replace('Admin/', '');
         }
         
+        // 獲取連結的文件名（不含路徑）
+        const linkFile = link.path.split('/').pop() || 'index.html';
+        
+        // 判斷是否為當前頁面
+        const isActive = currentPageFile === linkFile;
+        console.log(`比較: 當前頁面 ${currentPageFile} vs 連結 ${linkFile} = ${isActive}`);
+        
         return `
         <li class="nav-item">
           <a href="${adjustedPath}"
-             class="nav-link ${currentPath === link.path.split('/').pop() ? 'active' : ''}"
+             class="nav-link ${isActive ? 'active' : ''}"
              title="${link.title}">
             <i class="${link.icon}"></i>
             <span class="nav-text">${link.title}</span>
